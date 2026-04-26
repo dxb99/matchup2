@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>DXB99 Matchup Generator</title>
+
+<script>
+  const style = document.createElement("link");
+  style.rel = "stylesheet";
+  style.href = "style.css?v=" + new Date().getTime();
+  document.head.appendChild(style);
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+</head>
+
+<body>
+
+
+<!-- LOADING SCREEN -->
+
+<div id="loadingScreen">
+
+<div id="logoBg"></div> <!-- 🔥 NEW LINE -->
+
+<div id="logo"></div>
+
+<div class="loadingText">
+LOADING<span class="dots"></span>
+</div>
+
+</div>
+
+
+<!-- MAIN APP -->
+
+<div id="app" class="hidden">
+
+
+<header>
+
+<h1>DXB99 MATCHUP GENERATOR</h1>
+
+<div id="adminBar">
+  <span id="customSessionBadge" class="customSessionBadge">CUSTOM SESSION ACTIVE</span>
+
+  <div class="adminStatusGroup">
+    <span id="adminStatus">🔒 LOCKED</span>
+    <button id="adminLockBtn" style="display:none;">LOCK</button>
+  </div>
+</div>
+
+<div class="tabs">
+
+<button onclick="showTab('matchupTab', this)" class="tabButton active">
+<span class="tabIcon">🆚</span>
+MATCHUP
+</button>
+
+<button onclick="showTab('generatorTab', this)" class="tabButton">
+<span class="tabIcon">🔀</span>
+GENERATOR
+</button>
+
+<button onclick="openHistoryTab(this)" class="tabButton">
+<span class="tabIcon">📜</span>
+HISTORY
+</button>
+
+<button onclick="showTab('ratingsTab', this)" class="tabButton">
+<span class="tabIcon">★</span>
+RATINGS
+</button>
+
+<button onclick="openAdminTab(this)" class="tabButton">
+<span class="tabIcon">👥</span>
+PLAYERS
+</button>
+
+<button onclick="showTab('mapListTab', this)" class="tabButton">
+<span class="tabIcon">🗺</span>
+MAP LIST
+</button>
+
+<button onclick="showTab('helpTab', this)" class="tabButton">
+<span class="tabIcon">❓</span>
+HELP
+</button>
+
+</div>
+
+</header>
+
+<!-- MATCHUP TAB -->
+
+<div id="matchupTab" class="tabContent active">
+
+<div id="matchupDashboardCard">
+
+  <div id="matchCountdown"></div>
+
+  <div id="matchupContent"></div>
+
+<div id="upcomingSection" class="upcomingSection">
+
+  <div id="upcomingSessionCard" class="copySessionShell upcomingSessionCard">
+  <div class="copySessionTitle">SESSION MAPS</div>
+   <div id="upcomingSessionMaker" class="copySessionMaker matchMakerInlineRow">Match Maker: Not selected</div>
+    <div id="upcomingSessionBody" class="copySessionBody">
+   <div id="sessionMapsLoading" class="sessionMapsLoading">
+  <div class="spinner sessionMapsSpinner"></div>
+<div class="sessionMapsLoadingText">
+  LOADING<span class="dots"></span>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- GENERATOR TAB -->
+
+<!-- GENERATOR TAB -->
+
+<div id="generatorTab" class="tabContent">
+
+<select id="matchMakerSelect"></select>
+
+<h2>Players (<span id="selectedPlayerCount">0</span> Selected)</h2>
+
+<div class="playerSort">
+
+Sort by:
+
+<select id="playerSort">
+
+<option value="alpha">Name</option>
+
+<option value="skill">Level</option>
+
+</select>
+
+</div>
+
+<div id="playersCheckboxes"></div>
+
+<button id="generateButton">
+CLICK TO GENERATE MATCHUP
+</button>
+
+<div class="generatorFilters">
+
+<div class="radioRow">
+
+<label><input type="radio" name="gapFilter" value="all" checked> All options</label>
+
+<label><input type="radio" name="gapFilter" value="0"> Difference 0</label>
+
+<label><input type="radio" name="gapFilter" value="1"> Difference 1</label>
+
+<label><input type="radio" name="gapFilter" value="2"> Difference 2</label>
+
+<label><input type="radio" name="gapFilter" value="3"> Difference 3</label>
+
+<label><input type="radio" name="gapFilter" value="4"> Difference 4</label>
+
+</div>
+
+<div class="blitzToggle" style="display:none;">
+
+<label>
+<input type="checkbox" id="blitzToggle">
+<div class="blitzScroll">
+<div class="blitzTrack">
+  <span class="blitzText">⚡ Only show recommended BLITZ matchup/s for uneven teams! (if available)</span>
+</div>
+</div>
+</label>
+
+</div>
+
+</div>
+
+<div id="generatedMatchups"></div>
+
+</div>
+
+<!-- HISTORY TAB -->
+
+<div id="historyTab" class="tabContent">
+
+<div class="historyControls">
+
+<button id="clearHistoryBtn" class="btn btn-red">CLEAR MATCHUP HISTORY</button>
+
+</div>
+
+<table id="historyTable">
+
+<thead>
+<tr>
+<th data-sort="date">Date / Time</th>
+<th data-sort="mid">Match ID</th>
+<th data-sort="maker">Match Maker</th>
+<th data-sort="picked">Times Picked</th>
+<th data-sort="gap">Difference</th>
+</tr>
+</thead>
+
+<tbody id="historyTableBody">
+<!-- Rows will be inserted here -->
+</tbody>
+  
+</table>
+
+</div>
+
+<!-- RATINGS TAB -->
+
+<div id="ratingsTab" class="tabContent">
+
+<div id="ratingsLayout">
+
+  <div class="ratingsHeaderRow">
+    <div class="ratingsTitleBlock">
+      <div class="ratingsKicker"><span class="ratingsTitleStar">★</span> PLAYER RATINGS</div>
+      <p>Rate all players based on their overall performance in each game mode. You can submit your ratings once every 6 months.</p>
+    </div>
+
+    <div id="ratingsStatusCard" class="ratingsStatusCard">
+      <div class="ratingsStatusLabel">Voting status</div>
+      <div id="ratingsStatusText" class="ratingsStatusText">Offline preview</div>
+      <div id="ratingsStatusDate" class="ratingsStatusDate">Schedule will connect in the backend step.</div>
+    </div>
+  </div>
+
+  <div class="ratingsRaterCard">
+    <div class="ratingsRaterIcon">USER</div>
+    <div class="ratingsRaterFields">
+      <label for="ratingsRaterSelect">YOUR NAME (RATER)</label>
+      <select id="ratingsRaterSelect"></select>
+      <div class="ratingsHelpText">This name will be recorded with your ratings.</div>
+
+      <div class="ratingsCodeGrid">
+        <div>
+          <label for="ratingsEmailInput">EMAIL</label>
+          <input id="ratingsEmailInput" class="ratingsTextInput" type="email" placeholder="name@example.com">
+        </div>
+
+        <button id="requestRatingCodeBtn" class="btn btn-blue">REQUEST CODE</button>
+
+        <div>
+          <label for="ratingsCodeInput">CODE</label>
+          <input id="ratingsCodeInput" class="ratingsTextInput" type="text" inputmode="numeric" maxlength="6" placeholder="Enter code">
+        </div>
+      </div>
+
+      <div id="ratingsCodeStatus" class="ratingsHelpText">Voting codes will be valid for 1 hour.</div>
+    </div>
+  </div>
+
+  <div class="ratingsAdminCard">
+    <div>
+      <div class="ratingsAdminTitle">Admin controls</div>
+      <div class="ratingsHelpText">Setup sheets, apply finished ratings, or manage active players.</div>
+    </div>
+    <div class="ratingsAdminActions">
+      <button id="setupRatingSheetsBtn" class="btn btn-green">SETUP SHEETS</button>
+      <button id="manualVotingToggleBtn" class="btn btn-blue">UNLOCK VOTING 2H</button>
+      <button id="applyRatingsBtn" class="btn btn-orange">APPLY RATINGS</button>
+      <button id="ratingsAddPlayerBtn" class="btn btn-blue">ADD PLAYER</button>
+      <button id="ratingsRemovePlayerBtn" class="btn btn-red">REMOVE PLAYER</button>
+    </div>
+  </div>
+
+  <div class="ratingsInfoBar">
+    <div class="ratingsInfoMain">
+      <button id="ratingsInfoBtn" class="ratingsInfoIcon" type="button">i</button>
+      <span>Rate each player from 0 (weak) to 10 (elite) for both Blitz and CTF.</span>
+      <div id="ratingsInfoTooltip" class="ratingsInfoTooltip">
+        <div class="ratingsInfoPanel">
+          <div class="ratingsInfoPanelTop">
+            <div class="ratingsInfoPanelTitle">How Ratings Are Calculated</div>
+            <button id="ratingsInfoCloseBtn" class="ratingsInfoIcon ratingsInfoCloseBtn" type="button">x</button>
+          </div>
+          <p>Each voting cycle starts fresh. Old votes from previous cycles are not reused.</p>
+          <p>For each player, the system looks at the scores they received from other players.</p>
+          <p>First, Blitz scores are sorted from low to high and the middle number becomes that player's Blitz median.</p>
+          <p><strong>Example:</strong> if a player's Blitz scores are:</p>
+          <div class="ratingsInfoExample">5, 3, 7, 6, 8, 10, 10, 9, 3</div>
+          <p>The sorted order is:</p>
+          <div class="ratingsInfoExample">3, 3, 5, 6, 7, 8, 9, 10, 10</div>
+          <p>There are 9 scores, so the middle score is the 5th number: <strong>7</strong>. So that player's Blitz median is <strong>7</strong>.</p>
+          <p>The same thing is done separately for CTF scores to get the CTF median.</p>
+          <p>To create one final skill number, the system combines all Blitz and CTF scores together and finds the median again.</p>
+          <p><strong>Combined sorted Blitz + CTF example:</strong></p>
+          <div class="ratingsInfoExample">3, 3, 5, 6, 7, 7, 8, 8, 8, 9, 9, 9, 9, 10, 10, 10, 10, 10</div>
+          <p>There are 18 scores, so the middle is between the 9th and 10th numbers: <strong>8</strong> and <strong>9</strong>.</p>
+          <p>Average of the two middle numbers: <strong>(8 + 9) / 2 = 8.5</strong>.</p>
+          <p>Final skill number: <strong>9</strong>.</p>
+          <p>Using the median helps protect players from one unusually low or unusually high vote.</p>
+        </div>
+      </div>
+    </div>
+    <div class="ratingsScaleText">0 = Weak&nbsp;&nbsp; | &nbsp;&nbsp;5 = Average&nbsp;&nbsp; | &nbsp;&nbsp;10 = Elite</div>
+  </div>
+
+  <div class="ratingsTableShell">
+    <div class="ratingsTableHeader">
+      <div>PLAYER</div>
+      <div class="ratingsBlitzHeader">BLITZ <span>0-10</span></div>
+      <div class="ratingsCtfHeader">CTF <span>0-10</span></div>
+    </div>
+    <div id="ratingsRows"></div>
+  </div>
+
+  <div class="ratingsFooterRow">
+    <div class="ratingsVoteCard">
+      <div class="ratingsVoteIcon">
+        <img src="DXB99.MATCHUP.png" alt="DXB99">
+      </div>
+      <div>
+        <div class="ratingsVoteTitle">YOUR VOTE MATTERS</div>
+        <div class="ratingsHelpText">These ratings help balance teams and improve the overall experience for everyone.</div>
+      </div>
+    </div>
+
+    <div class="ratingsSubmitWrap">
+      <button id="submitRatingsBtn" class="ratingsSubmitBtn">
+        <span class="ratingsSubmitIcon">✓</span>
+        <span>SUBMIT RATINGS</span>
+      </button>
+      <div class="ratingsSubmitNote">Make sure all players are rated before submitting.</div>
+    </div>
+  </div>
+
+</div>
+
+</div>
+
+<!-- ADMIN TAB -->
+
+<div id="adminTab" class="tabContent">
+
+<div class="adminControls">
+
+<button id="addPlayer" class="btn btn-blue">ADD PLAYER</button>
+
+<span id="playerCount">Players: 0</span>
+<span id="adminDirtyStatus" class="adminDirtyStatus">Changes not saved</span>
+
+<button id="savePlayers" class="btn btn-green">SAVE</button>
+
+</div>
+
+
+<table id="adminTable">
+
+<thead>
+
+<tr>
+
+<th data-sort="name" class="adminSortable">Name ▴▾</th>
+
+<th data-sort="skill" class="adminSortable">Skill ▴▾</th>
+
+<th>Match Maker</th>
+
+<th>Remove</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+</tbody>
+
+</table>
+
+</div>
+
+<!-- MAPLIST TAB -->
+
+<div id="mapListTab" class="tabContent">
+
+<div id="mapListLayout">
+
+  <!-- LEFT: SESSION MAPS -->
+<div id="mapSessionPanel">
+
+<div class="sessionMapsHeading">SESSION MAPS</div>
+
+<div class="mapMatchMakerRow">
+  <span class="mapMatchMakerLabel">Match Maker:</span>
+  <select id="mapMatchMakerSelect"></select>
+</div>
+    
+<div id="sessionMapsContainer">
+
+  <!-- NEW VISIBLE SINGLE CARD -->
+  <div id="sessionMapsUnifiedCard" class="mapMasterColumn">
+    <div id="sessionMapsUnifiedRows" class="mapMasterRows"></div>
+  </div>
+
+  <!-- LEGACY HIDDEN CONTAINERS (kept for existing highlight logic) -->
+  <div id="sessionMapsLegacy" style="display:none;">
+
+    <!-- ELIMINATION -->
+    <div class="mapSessionSection">
+      <div class="mapSessionSectionTitle eliminationHeader">Elimination</div>
+      <div id="eliminationSessionList" class="mapSessionList"></div>
+    </div>
+
+    <!-- BLITZ -->
+    <div class="mapSessionSection">
+      <div class="mapSessionSectionTitle blitzHeader">Blitz</div>
+      <div id="blitzSessionList" class="mapSessionList"></div>
+    </div>
+
+    <!-- CTF -->
+    <div class="mapSessionSection">
+      <div class="mapSessionSectionTitle ctfHeader">CTF</div>
+      <div id="ctfSessionList" class="mapSessionList"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<div id="sessionControls">
+
+  <button id="saveSessionProgressBtn" class="btn">SAVE SESSION PROGRESS</button>
+      
+  <button id="generateSessionMapsBtn" class="btn">GENERATE SESSION MAPS</button>
+
+  <button id="clearSessionMapsBtn" class="btn">CLEAR SESSION MAPS</button>
+
+  <button id="buildCustomSessionBtn" class="btn">BUILD CUSTOM SESSION</button>
+
+  <button id="saveCustomSessionBtn" class="btn" style="display:none;">SAVE CUSTOM SESSION</button>
+
+  <button id="clearCustomSessionBtn" class="btn" style="display:none;">EXIT CUSTOM SESSION</button>
+
+  <button id="copySessionMapsBtn" class="btn">COPY SESSION MAPS</button>
+
+</div>
+
+</div>
+
+    <!-- BUTTONS -->
+    
+    <!-- RIGHT: FULL MAP LIST -->
+  <div id="mapMasterList">
+
+    <h2 class="completeMapHeader">COMPLETE MAP LIST</h2>
+
+    <div class="mapMasterColumn">
+      <div class="mapModeHeader eliminationHeader">Elimination</div>
+      <div id="eliminationMasterList" class="mapMasterRows"></div>
+    </div>
+
+    <div class="mapMasterColumn">
+      <div class="mapModeHeader blitzHeader">Blitz</div>
+      <div id="blitzMasterList" class="mapMasterRows"></div>
+    </div>
+
+    <div class="mapMasterColumn">
+      <div class="mapModeHeader ctfHeader">CTF</div>
+      <div id="ctfMasterList" class="mapMasterRows"></div>
+    </div>
+
+  </div>
+
+</div>
+
+</div>
+
+<div id="helpTab" class="tabContent">
+
+  <div class="helpImageWrap">
+    <img src="Spoon.png" alt="Spoon" class="helpImage">
+  </div>
+
+</div>
+
+<div id="copySessionCard" class="copySessionCard">
+  <div class="copySessionShell">
+    <div class="copySessionTitle">SESSION MAPS</div>
+    <div id="copySessionMaker" class="copySessionMaker">MATCH MAKER: -</div>
+    <div id="copySessionBody" class="copySessionBody"></div>
+  </div>
+</div>
+
+<script>
+  const script = document.createElement("script");
+  script.src = "script.js?v=" + new Date().getTime();
+  document.body.appendChild(script);
+</script>
+
+<script>
+
+function showTab(tab, btn){
+
+document.querySelectorAll(".tabContent").forEach(x=>x.classList.remove("active"));
+
+document.querySelectorAll(".tabButton").forEach(x=>x.classList.remove("active"));
+
+document.getElementById(tab).classList.add("active");
+
+if(btn) btn.classList.add("active");
+
+/* 🔥 ALWAYS SCROLL TO TOP ON TAB CHANGE */
+window.scrollTo({
+  top: 0,
+  behavior: "instant" // use "smooth" if you want animation
+});
+
+}
+
+</script>
+
+<div id="generatingOverlay">
+<div class="generatingBox">
+<div class="spinner"></div>
+<div class="generatingText">
+GENERATING<span class="dots"></span>
+</div>
+</div>
+</div>
+
+<!-- SAVING OVERLAY (SEPARATE) -->
+
+<div id="savingMatchOverlay">
+<div class="generatingBox">
+<div class="spinner"></div>
+<div class="generatingText">
+SAVING<span class="dots"></span>
+</div>
+</div>
+</div>
+
+<div id="historyLoadingOverlay">
+
+<div class="generatingBox">
+
+<div class="spinner"></div>
+
+<div class="generatingText">
+LOADING<span class="dots"></span>
+</div>
+
+</div>
+
+</div>
+
+
+<div id="clearHistoryOverlay">
+
+<div class="generatingBox">
+
+<div class="spinner"></div>
+
+<div class="generatingText">
+CLEARING HISTORY<span class="dots"></span>
+</div>
+
+</div>
+
+</div>
+
+<div id="savingOverlay">
+
+<div class="generatingBox">
+
+<div class="spinner"></div>
+
+<div class="generatingText">
+SAVING<span class="dots"></span>
+</div>
+
+</div>
+
+</div>
+
+<!-- 🔥 GLOBAL MODAL -->
+
+<div id="customModal" class="modalOverlay">
+
+  <div class="modalBox">
+
+    <div id="modalMessage" class="modalMessage"></div>
+
+    <input id="modalInput" class="modalInput" type="password" placeholder="Enter password" />
+
+    <div class="modalButtons">
+
+    <button id="modalCancel" class="btn btn-red modalIconBtn">✕</button>
+    <button id="modalConfirm" class="btn btn-green modalIconBtn">✓</button>
+
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+</html>
