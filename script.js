@@ -873,23 +873,34 @@ setTimeout(async () => {
   const matchupBtn = document.querySelector('.tabButton[onclick*="matchupTab"]');
   showTab("matchupTab", matchupBtn);
 
-  // 🔥 REFRESH HISTORY
-  const historyData = await api({ action: "getHistory" });
-  if(historyData.ok){
-    matchHistory = historyData.history || [];
+  try{
+
+    // 🔥 Refresh only the visible matchup before hiding overlay.
+    const data = await api({action:"getInitialData"});
+
+    if(data.ok){
+      allPlayers = data.players || allPlayers;
+      globalMapMatchMaker = data.mapMatchMaker || globalMapMatchMaker;
+      renderMatchup(data.currentMatchup);
+      renderUpcomingSessionCard(getActiveSessionMaps());
+    }
+
+  }finally{
+
+    overlay.style.display = "none";
+
   }
 
-  // 🔥 UPDATE GENERATED MATCHUPS (so counts stay accurate)
-  const updatedMatchups = generateMatchupsLocal(lastSelectedPlayers, "all");
-
-  lastGeneratedMatchups = updatedMatchups;
-  updateGapCounts();
-  applyGapFilter();
-
-  // 🔥 REFRESH CURRENT MATCH DISPLAY
-  await loadInitialData();
-
-  overlay.style.display = "none";
+  // 🔥 Refresh generator/history details quietly after the user is already on Matchup.
+  api({ action: "getHistory" }).then(historyData => {
+    if(historyData.ok){
+      matchHistory = historyData.history || [];
+      const updatedMatchups = generateMatchupsLocal(lastSelectedPlayers, "all");
+      lastGeneratedMatchups = updatedMatchups;
+      updateGapCounts();
+      applyGapFilter();
+    }
+  }).catch(() => {});
 
 }, 1000);
 
