@@ -869,7 +869,9 @@ overlay.querySelector(".generatingText").innerHTML = "SAVED ✓";
 
 setTimeout(async () => {
 
-  overlay.style.display = "none";
+  // 🔥 Switch while overlay is still visible, so Generator never flashes back onscreen.
+  const matchupBtn = document.querySelector('.tabButton[onclick*="matchupTab"]');
+  showTab("matchupTab", matchupBtn);
 
   // 🔥 REFRESH HISTORY
   const historyData = await api({ action: "getHistory" });
@@ -884,12 +886,10 @@ setTimeout(async () => {
   updateGapCounts();
   applyGapFilter();
 
-  // 🔥 NOW GO TO MATCHUP TAB
-  const matchupBtn = document.querySelector('.tabButton[onclick*="matchupTab"]');
-  showTab("matchupTab", matchupBtn);
-
   // 🔥 REFRESH CURRENT MATCH DISPLAY
   await loadInitialData();
+
+  overlay.style.display = "none";
 
 }, 1000);
 
