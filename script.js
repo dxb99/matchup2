@@ -302,6 +302,38 @@ async function api(data){
 
 }
 
+function showBusy(message = "LOADING"){
+
+  const overlay = document.getElementById("savingOverlay");
+
+  if(!overlay) return;
+
+  const text = overlay.querySelector(".generatingText");
+
+  if(text){
+    text.innerHTML = `${message}<span class="dots"></span>`;
+  }
+
+  overlay.style.display = "flex";
+
+}
+
+function hideBusy(){
+
+  const overlay = document.getElementById("savingOverlay");
+
+  if(!overlay) return;
+
+  overlay.style.display = "none";
+
+  const text = overlay.querySelector(".generatingText");
+
+  if(text){
+    text.innerHTML = "SAVING<span class=\"dots\"></span>";
+  }
+
+}
+
 async function loadInitialData(){
 
 const data = await api({action:"getInitialData"});
@@ -572,13 +604,13 @@ if(!maker){
   document.querySelectorAll("#playersCheckboxes input:checked").forEach(x=>{
     selectedPlayers.push(x.value);
   });
-
-  document.getElementById("generatingOverlay").style.display = "flex";
   
   if(selectedPlayers.length < 2){
     showModal("Select at least 2 players.", "alert");
     return;
   }
+
+  document.getElementById("generatingOverlay").style.display = "flex";
 
   const gap = document.querySelector('input[name="gapFilter"]:checked').value;
 
@@ -1326,6 +1358,8 @@ async function requestRatingCode(){
     return;
   }
 
+  showBusy("SENDING CODE");
+
   try{
 
     const res = await api({
@@ -1352,6 +1386,10 @@ async function requestRatingCode(){
     }
 
     showModal("Code request is not connected in this deployed version yet.", "alert");
+
+  }finally{
+
+    hideBusy();
 
   }
 
@@ -1929,6 +1967,8 @@ async function submitRatings(){
     return;
   }
 
+  showBusy("SUBMITTING RATINGS");
+
   try{
 
     const res = await api({
@@ -1955,6 +1995,10 @@ async function submitRatings(){
   }catch(err){
 
     submitRatingsPreview(formData);
+
+  }finally{
+
+    hideBusy();
 
   }
 
