@@ -23,6 +23,7 @@ let currentAdminSort = {
 };
 let customSessionActive = false;
 let customSessionHasUnsavedChanges = false;
+let sessionProgressHasUnsavedChanges = false;
 let customSessionData = {
   elimination: [],
   blitz: [],
@@ -380,6 +381,19 @@ async function canLeaveCurrentTab(nextTab){
       customSessionData = normalizeSessionData(currentSessionMaps);
       updateCustomSessionButtons();
       renderAllSessionViews();
+      return true;
+    }
+
+    return false;
+  }
+
+  if(activeTabId === "mapListTab" && sessionProgressHasUnsavedChanges){
+    const leave = await showModal(
+      "You removed session maps but have not saved session progress. Leave without saving progress?",
+      "confirm"
+    );
+
+    if(leave){
       return true;
     }
 
@@ -3501,6 +3515,7 @@ row.querySelector(".mapDeleteMini").onclick = async () => {
   // 🔥 ADD THIS
   sessionStorage.setItem("adminPass", pass);
   updateAdminBar();
+  sessionProgressHasUnsavedChanges = true;
 
   renderSessionMaps(res);
 
@@ -3594,6 +3609,7 @@ row.querySelector(".mapDeleteMini").onclick = async () => {
   // 🔥 ADD THIS
   sessionStorage.setItem("adminPass", pass);
   updateAdminBar();
+  sessionProgressHasUnsavedChanges = true;
 
   renderSessionMaps(res);
 
@@ -3697,6 +3713,7 @@ if(!pass) return;
 
     sessionStorage.setItem("adminPass", pass);
     updateAdminBar();
+    sessionProgressHasUnsavedChanges = false;
 
 renderSessionMaps(res);
 
@@ -3742,6 +3759,7 @@ saveBtn.onclick = async () => {
   // 🔥 ADD THIS
   sessionStorage.setItem("adminPass", pass);
   updateAdminBar();
+  sessionProgressHasUnsavedChanges = false;
 
   showModal("Session progress saved", "alert");
 
@@ -3798,6 +3816,7 @@ if(clearSessionBtn){
 
     sessionStorage.setItem("adminPass", pass);
     updateAdminBar();
+    sessionProgressHasUnsavedChanges = false;
 
     currentSessionMaps = normalizeSessionData(res);
     renderAllSessionViews();
@@ -3864,6 +3883,7 @@ if(saveCustomBtn){
 
     customSessionActive = !!res.active;
     customSessionHasUnsavedChanges = false;
+    sessionProgressHasUnsavedChanges = false;
     customSessionData = normalizeSessionData(res.session);
     currentSessionMaps = normalizeSessionData(res.sessionMaps || res.session);
 
