@@ -40,6 +40,7 @@ let currentSessionMaps = {
 let currentRatingStatus = null;
 const RATINGS_TIME_ZONE = "Asia/Dubai";
 const RATINGS_TIME_ZONE_LABEL = "GST";
+const API_TIMEOUT_MS = 30000;
 let armedMatchKey = null; // 🔥 tracks first click before confirm
 
 /* 🔥 GLOBAL MODAL SYSTEM */
@@ -307,15 +308,45 @@ blitzToggle.addEventListener("change", () => {
 
 async function api(data){
 
-  const res = await fetch(API_URL,{
-    method:"POST",
-    headers:{
-      "Content-Type":"text/plain;charset=utf-8"
-    },
-    body:JSON.stringify(data)
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
 
-  return await res.json();
+  try{
+
+    const res = await fetch(API_URL,{
+      method:"POST",
+      headers:{
+        "Content-Type":"text/plain;charset=utf-8"
+      },
+      body:JSON.stringify(data),
+      signal: controller.signal
+    });
+
+    if(!res.ok){
+      throw new Error(`Request failed with status ${res.status}`);
+    }
+
+    const text = await res.text();
+
+    try{
+      return JSON.parse(text);
+    }catch(err){
+      throw new Error("Server returned an unreadable response");
+    }
+
+  }catch(err){
+
+    if(err && err.name === "AbortError"){
+      throw new Error("Request timed out. The action may have completed. Refresh and check before trying again.");
+    }
+
+    throw err;
+
+  }finally{
+
+    clearTimeout(timeoutId);
+
+  }
 
 }
 
@@ -348,6 +379,22 @@ function hideBusy(){
   if(text){
     text.innerHTML = "SAVING<span class=\"dots\"></span>";
   }
+
+}
+
+function getActionErrorMessage(err, fallback = "Action failed."){
+
+  const message = err && err.message ? err.message : "";
+
+  if(message.includes("timed out")){
+    return message;
+  }
+
+  if(message){
+    return `${fallback} ${message}`;
+  }
+
+  return fallback;
 
 }
 
@@ -3981,6 +4028,13 @@ if(saveCustomBtn){
     renderAllSessionViews();
 
     showModal("Custom session saved", "alert");
+
+    }catch(err){
+
+      showModal(
+        getActionErrorMessage(err, "Save custom session failed."),
+        "alert"
+      );
 
     }finally{
 
