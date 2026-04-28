@@ -22,6 +22,7 @@ let currentAdminSort = {
   direction: "asc"
 };
 let customSessionActive = false;
+let customSessionHasUnsavedChanges = false;
 let customSessionData = {
   elimination: [],
   blitz: [],
@@ -343,6 +344,49 @@ function hideBusy(){
   if(text){
     text.innerHTML = "SAVING<span class=\"dots\"></span>";
   }
+
+}
+
+async function canLeaveCurrentTab(nextTab){
+
+  const activeTab = document.querySelector(".tabContent.active");
+  const activeTabId = activeTab ? activeTab.id : "";
+
+  if(!activeTabId || activeTabId === nextTab) return true;
+
+  if(activeTabId === "adminTab" && adminHasUnsavedChanges){
+    const leave = await showModal(
+      "You have unsaved player changes. Leave without saving?",
+      "confirm"
+    );
+
+    if(leave){
+      markAdminDirty(false);
+      return true;
+    }
+
+    return false;
+  }
+
+  if(activeTabId === "mapListTab" && customSessionActive && customSessionHasUnsavedChanges){
+    const leave = await showModal(
+      "You have unsaved custom session changes. Leave without saving?",
+      "confirm"
+    );
+
+    if(leave){
+      customSessionActive = false;
+      customSessionHasUnsavedChanges = false;
+      customSessionData = normalizeSessionData(currentSessionMaps);
+      updateCustomSessionButtons();
+      renderAllSessionViews();
+      return true;
+    }
+
+    return false;
+  }
+
+  return true;
 
 }
 
@@ -2131,7 +2175,9 @@ function createSkillAdjuster(value){
 
 async function openAdminTab(btn){
 
-  showTab("adminTab", btn);
+  if(document.querySelector("#adminTab.active")) return;
+
+  if(!(await showTab("adminTab", btn))) return;
 
   /* SHOW LOADING OVERLAY */
 
@@ -2387,7 +2433,7 @@ openAdminTab();
 
 async function openHistoryTab(btn){
 
-  showTab("historyTab", btn);
+  if(!(await showTab("historyTab", btn))) return;
 
   document.getElementById("historyLoadingOverlay").style.display = "flex";
 
@@ -3180,6 +3226,7 @@ async function toggleCustomSessionMap(mode, mapName){
     ...customSessionData,
     [mode]: current
   };
+  customSessionHasUnsavedChanges = true;
 
   renderAllSessionViews();
 
@@ -3219,11 +3266,13 @@ async function loadCustomSessionState(){
   if(!res || !res.ok){
     console.log("Failed loading custom session");
     customSessionActive = false;
+    customSessionHasUnsavedChanges = false;
     customSessionData = normalizeSessionData();
     return;
   }
 
   customSessionActive = false;
+  customSessionHasUnsavedChanges = false;
   customSessionData = normalizeSessionData(res.session);
 
 }
@@ -3722,6 +3771,7 @@ if(clearSessionBtn){
         blitz: [],
         ctf: []
       });
+      customSessionHasUnsavedChanges = true;
 
       renderAllSessionViews();
       showModal("Custom session maps cleared", "alert");
@@ -3772,6 +3822,7 @@ if(buildCustomBtn){
     }
 
     customSessionActive = true;
+    customSessionHasUnsavedChanges = false;
     customSessionData = normalizeSessionData(currentSessionMaps);
 
     updateCustomSessionButtons();
@@ -3812,6 +3863,7 @@ if(saveCustomBtn){
     updateAdminBar();
 
     customSessionActive = !!res.active;
+    customSessionHasUnsavedChanges = false;
     customSessionData = normalizeSessionData(res.session);
     currentSessionMaps = normalizeSessionData(res.sessionMaps || res.session);
 
@@ -3858,6 +3910,7 @@ if(clearCustomBtn){
     updateAdminBar();
 
     customSessionActive = false;
+    customSessionHasUnsavedChanges = false;
     customSessionData = normalizeSessionData(res.session);
     currentSessionMaps = normalizeSessionData(getActiveSessionMaps());
 
