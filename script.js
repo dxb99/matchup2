@@ -45,6 +45,33 @@ let armedMatchKey = null; // 🔥 tracks first click before confirm
 
 /* 🔥 GLOBAL MODAL SYSTEM */
 
+function escapeModalText(value){
+  return value
+    .toString()
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function setModalMessage(msg, message){
+  const text = message === null || typeof message === "undefined"
+    ? ""
+    : message.toString();
+
+  if(text.trim().startsWith("⚠")){
+    const cleanText = text.trim().replace(/^⚠\s*/, "");
+    msg.innerHTML = `
+      <span class="modalWarningSymbol">⚠</span>
+      <span>${escapeModalText(cleanText)}</span>
+    `;
+    return;
+  }
+
+  msg.innerText = text;
+}
+
 function showModal(message, type = "alert", confirmText = "Confirm", cancelText = "Cancel", withInput = false, inputType = "password", inputPlaceholder = "Enter password"){
 
   return new Promise((resolve)=>{
@@ -55,7 +82,7 @@ function showModal(message, type = "alert", confirmText = "Confirm", cancelText 
     const cancelBtn = document.getElementById("modalCancel");
     const input = document.getElementById("modalInput");
 
-    msg.innerText = message;
+    setModalMessage(msg, message);
 
     confirmBtn.innerHTML = confirmText === "Confirm" ? "✓" : confirmText;
     cancelBtn.innerHTML = cancelText === "Cancel" ? "✕" : cancelText;
