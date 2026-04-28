@@ -509,7 +509,12 @@ CLICK TO GENERATE MATCHUP
 
 <script>
 
-function showTab(tab, btn){
+async function showTab(tab, btn){
+
+if(window.canLeaveCurrentTab){
+  const canLeave = await window.canLeaveCurrentTab(tab);
+  if(!canLeave) return false;
+}
 
 document.querySelectorAll(".tabContent").forEach(x=>x.classList.remove("active"));
 
@@ -524,6 +529,8 @@ window.scrollTo({
   top: 0,
   behavior: "instant" // use "smooth" if you want animation
 });
+
+return true;
 
 }
 
