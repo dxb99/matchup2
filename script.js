@@ -3813,6 +3813,7 @@ if(saveCustomBtn){
 
     customSessionActive = !!res.active;
     customSessionData = normalizeSessionData(res.session);
+    currentSessionMaps = normalizeSessionData(res.sessionMaps || res.session);
 
     updateCustomSessionButtons();
     renderAllSessionViews();
@@ -3858,6 +3859,7 @@ if(clearCustomBtn){
 
     customSessionActive = false;
     customSessionData = normalizeSessionData(res.session);
+    currentSessionMaps = normalizeSessionData(getActiveSessionMaps());
 
     updateCustomSessionButtons();
     renderAllSessionViews();
