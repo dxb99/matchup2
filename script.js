@@ -50,39 +50,39 @@ const RATING_SCALE_OPTIONS = [
 ];
 const RATING_CATEGORIES = [
   {
+    key: "combat",
+    label: "Combat Skills",
+    tip: "Aim, weapon use, ammo conservation.",
+    theme: "green"
+  },
+  {
     key: "comms",
-    label: "Comms",
-    tip: "Clear and useful team callouts.",
+    label: "Communication / Status Updates",
+    tip: "Clear and useful updates.",
     theme: "purple"
   },
   {
-    key: "combat",
-    label: "Combat",
-    tip: "Aim, weapon use, and winning fights.",
-    theme: "green"
-  },
-  {
-    key: "movement",
-    label: "Movement",
-    tip: "Dodging, escaping, chasing, and positioning.",
-    theme: "green"
-  },
-  {
-    key: "awareness",
-    label: "Awareness",
-    tip: "Map knowledge, routes, pickups, and pressure.",
-    theme: "blue"
-  },
-  {
     key: "objective",
-    label: "Objective",
-    tip: "Flag play, Blitz pushes, defense, support, and role discipline.",
+    label: "Decision Making",
+    tip: "On-the-fly decisions, such as whether to defend the flag or head out for backup.",
     theme: "gold"
   },
   {
+    key: "awareness",
+    label: "Map Awareness",
+    tip: "Overall map knowledge, pickup locations, routes.",
+    theme: "blue"
+  },
+  {
+    key: "movement",
+    label: "Movement / Speed",
+    tip: "Dodging, wall runs, escaping, chasing, and positioning.",
+    theme: "green"
+  },
+  {
     key: "impact",
-    label: "Impact",
-    tip: "Smart decisions that help the team win.",
+    label: "Team Impact",
+    tip: "Contribution to team game wins.",
     theme: "purple"
   }
 ];
@@ -2085,7 +2085,7 @@ function createRatingCategoryControl(category, isSelf){
     <div class="ratingsCategoryCell ratingsTheme-${category.theme} ratingsUntouched" data-category="${category.key}">
       <div class="ratingsCategoryTop">
         <span class="ratingsCategoryName">${category.label}</span>
-        <span class="ratingsCategoryTip" title="${category.tip}">?</span>
+        <span class="ratingsCategoryTip" data-tip="${category.tip}">?</span>
       </div>
       <div class="ratingsCategoryControl">
         <span class="ratingsValueBox" data-value="">-</span>
