@@ -1266,6 +1266,9 @@ if(mapMaker){
 }
 
 updateSelectedPlayerCount();
+
+}
+
 function markAdminDirty(isDirty = true){
   adminHasUnsavedChanges = isDirty;
 
