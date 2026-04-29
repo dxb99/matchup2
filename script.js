@@ -41,6 +41,51 @@ let currentRatingStatus = null;
 const RATINGS_TIME_ZONE = "Asia/Dubai";
 const RATINGS_TIME_ZONE_LABEL = "GST";
 const API_TIMEOUT_MS = 30000;
+const RATING_SCALE_OPTIONS = [
+  { label: "Poor", value: 0 },
+  { label: "Below Average", value: 2.5 },
+  { label: "Average", value: 5 },
+  { label: "Above Average", value: 7.5 },
+  { label: "Good", value: 10 }
+];
+const RATING_CATEGORIES = [
+  {
+    key: "comms",
+    label: "Comms",
+    tip: "Clear and useful team callouts.",
+    theme: "purple"
+  },
+  {
+    key: "combat",
+    label: "Combat",
+    tip: "Aim, weapon use, and winning fights.",
+    theme: "green"
+  },
+  {
+    key: "movement",
+    label: "Movement",
+    tip: "Dodging, escaping, chasing, and positioning.",
+    theme: "green"
+  },
+  {
+    key: "awareness",
+    label: "Awareness",
+    tip: "Map knowledge, routes, pickups, and pressure.",
+    theme: "blue"
+  },
+  {
+    key: "objective",
+    label: "Objective",
+    tip: "Flag play, Blitz pushes, defense, support, and role discipline.",
+    theme: "gold"
+  },
+  {
+    key: "impact",
+    label: "Impact",
+    tip: "Smart decisions that help the team win.",
+    theme: "purple"
+  }
+];
 let armedMatchKey = null; // 🔥 tracks first click before confirm
 
 /* 🔥 GLOBAL MODAL SYSTEM */
@@ -1922,14 +1967,12 @@ function renderRatingsPreview(){
     tableHeader.innerHTML = isVotingOpen
       ? `
         <div>PLAYER</div>
-        <div class="ratingsBlitzHeader">BLITZ <span>0-10</span></div>
-        <div class="ratingsCtfHeader">CTF <span>0-10</span></div>
+        <div class="ratingsCategoryHeader">OVERALL CATEGORIES <span>Poor to Good</span></div>
       `
       : `
         <div>PLAYER</div>
         <div>CURRENT SKILL</div>
-        <div class="ratingsBlitzHeader">BLITZ <span>MEDIAN</span></div>
-        <div class="ratingsCtfHeader">CTF <span>MEDIAN</span></div>
+        <div>CATEGORY AVERAGE</div>
         <div>VOTES</div>
       `;
   }
@@ -2014,14 +2057,9 @@ function renderRatingsReadOnlyRows(players){
           <strong>${formatRatingNumber(player.skill)}</strong>
         </div>
 
-        <div class="ratingsReadonlyValue ratingsReadonlyBlitz">
-          <span class="ratingsReadonlyLabel">Blitz Median</span>
-          <strong>${formatRatingNumber(latest.blitzMedian)}</strong>
-        </div>
-
-        <div class="ratingsReadonlyValue ratingsReadonlyCtf">
-          <span class="ratingsReadonlyLabel">CTF Median</span>
-          <strong>${formatRatingNumber(latest.ctfMedian)}</strong>
+        <div class="ratingsReadonlyValue ratingsReadonlyCategories">
+          <span class="ratingsReadonlyLabel">Category Average</span>
+          <strong>${formatRatingNumber(latest.finalSkill)}</strong>
         </div>
 
         <div class="ratingsReadonlyValue">
@@ -2032,6 +2070,61 @@ function renderRatingsReadOnlyRows(players){
 
       rows.appendChild(row);
     });
+
+}
+
+function getScaleOptionByIndex(index){
+
+  return RATING_SCALE_OPTIONS[Math.max(0, Math.min(RATING_SCALE_OPTIONS.length - 1, Number(index)))];
+
+}
+
+function createRatingCategoryControl(category, isSelf){
+
+  return `
+    <div class="ratingsCategoryCell ratingsTheme-${category.theme} ratingsUntouched" data-category="${category.key}">
+      <div class="ratingsCategoryTop">
+        <span class="ratingsCategoryName">${category.label}</span>
+        <span class="ratingsCategoryTip" title="${category.tip}">?</span>
+      </div>
+      <div class="ratingsCategoryControl">
+        <span class="ratingsValueBox" data-value="">-</span>
+        <input
+          class="ratingsSlider ratingsCategorySlider"
+          type="range"
+          min="0"
+          max="4"
+          step="1"
+          value="2"
+          data-category="${category.key}"
+          data-rated="false"
+          ${isSelf ? "disabled" : ""}
+        >
+      </div>
+      <div class="ratingsCategoryLabel">Not rated</div>
+    </div>
+  `;
+
+}
+
+function updateCategoryControl(cell, slider){
+
+  const option = getScaleOptionByIndex(slider.value);
+  const box = cell.querySelector(".ratingsValueBox");
+  const label = cell.querySelector(".ratingsCategoryLabel");
+
+  slider.dataset.rated = "true";
+  slider.dataset.value = option.value;
+  cell.classList.remove("ratingsUntouched");
+
+  if(box){
+    box.textContent = option.value;
+    box.dataset.value = option.value;
+  }
+
+  if(label){
+    label.textContent = option.label;
+  }
 
 }
 
@@ -2063,42 +2156,18 @@ function renderRatingsVotingRows(players, selectedRater){
           ${isSelf ? `<span class="ratingsSelfBadge">YOU</span>` : ""}
         </div>
 
-        <div class="ratingsSliderCell">
-          <input class="ratingsValueBox ratingsBlitzValue" type="number" min="0" max="10" step="1" value="5">
-          <span class="ratingsRangeMin">0</span>
-          <input class="ratingsSlider ratingsBlitzSlider" type="range" min="0" max="10" step="1" value="5">
-          <span class="ratingsRangeMax">10</span>
-        </div>
-
-        <div class="ratingsSliderCell">
-          <input class="ratingsValueBox ratingsCtfValue" type="number" min="0" max="10" step="1" value="5">
-          <span class="ratingsRangeMin">0</span>
-          <input class="ratingsSlider ratingsCtfSlider" type="range" min="0" max="10" step="1" value="5">
-          <span class="ratingsRangeMax">10</span>
+        <div class="ratingsCategoriesGrid">
+          ${RATING_CATEGORIES.map(category => createRatingCategoryControl(category, isSelf)).join("")}
         </div>
       `;
 
-      row.querySelectorAll(".ratingsSliderCell").forEach(cell => {
-        const box = cell.querySelector(".ratingsValueBox");
-        const slider = cell.querySelector(".ratingsSlider");
+      row.querySelectorAll(".ratingsCategoryCell").forEach(cell => {
+        const slider = cell.querySelector(".ratingsCategorySlider");
 
-        if(isSelf){
-          box.disabled = true;
-          slider.disabled = true;
-        }
+        if(!slider || isSelf) return;
 
         slider.addEventListener("input", () => {
-          box.value = slider.value;
-        });
-
-        box.addEventListener("input", () => {
-          let nextValue = parseInt(box.value, 10);
-
-          if(Number.isNaN(nextValue)) nextValue = 0;
-          nextValue = Math.max(0, Math.min(10, nextValue));
-
-          box.value = nextValue;
-          slider.value = nextValue;
+          updateCategoryControl(cell, slider);
         });
       });
 
@@ -2126,13 +2195,18 @@ function collectRatingsFormData(){
 
     if(!player || player === raterSelect.value) return;
 
-    const blitz = row.querySelector(".ratingsBlitzSlider");
-    const ctf = row.querySelector(".ratingsCtfSlider");
+    const categoryRatings = {};
+
+    RATING_CATEGORIES.forEach(category => {
+      const slider = row.querySelector(`.ratingsCategorySlider[data-category="${category.key}"]`);
+      categoryRatings[category.key] = slider && slider.dataset.rated === "true"
+        ? Number(slider.dataset.value)
+        : null;
+    });
 
     ratings.push({
       ratedPlayer: player,
-      blitz: Number(blitz ? blitz.value : 0),
-      ctf: Number(ctf ? ctf.value : 0)
+      ...categoryRatings
     });
   });
 
@@ -2143,19 +2217,15 @@ function collectRatingsFormData(){
     };
   }
 
+  const validValues = RATING_SCALE_OPTIONS.map(option => option.value);
   const invalid = ratings.some(r =>
-    !Number.isInteger(r.blitz) ||
-    !Number.isInteger(r.ctf) ||
-    r.blitz < 0 ||
-    r.blitz > 10 ||
-    r.ctf < 0 ||
-    r.ctf > 10
+    RATING_CATEGORIES.some(category => !validValues.includes(r[category.key]))
   );
 
   if(invalid){
     return {
       ok: false,
-      error: "Ratings must be whole numbers from 0 to 10."
+      error: "Please rate every category for every player before submitting."
     };
   }
 
@@ -2177,7 +2247,9 @@ function submitRatingsPreview(formData){
   }
 
   const ratings = data.ratings;
-  const combinedScores = ratings.flatMap(r => [r.blitz, r.ctf]);
+  const combinedScores = ratings.flatMap(r =>
+    RATING_CATEGORIES.map(category => r[category.key])
+  );
   const average = combinedScores.reduce((sum, value) => sum + value, 0) / combinedScores.length;
 
   sessionStorage.setItem("ratingsPreview", JSON.stringify({
