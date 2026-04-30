@@ -3296,6 +3296,27 @@ background:
 background:transparent;
 }
 
+.eliminationHeader{
+  color:#ffffff;
+  background:linear-gradient(180deg, #ff5a5a 0%, #b91c1c 100%);
+  border-color:rgba(255,255,255,0.16);
+  text-shadow:0 1px 2px rgba(0,0,0,0.45);
+}
+
+.blitzHeader{
+  color:#111111;
+  background:linear-gradient(180deg, #fde047 0%, #ca8a04 100%);
+  border-color:rgba(255,255,255,0.18);
+  text-shadow:0 1px 0 rgba(255,255,255,0.32);
+}
+
+.ctfHeader{
+  color:#ffffff;
+  background:linear-gradient(180deg, #60a5fa 0%, #1d4ed8 100%);
+  border-color:rgba(255,255,255,0.16);
+  text-shadow:0 1px 2px rgba(0,0,0,0.45);
+}
+
 .tabContent{
 margin-top:180px;
 }
