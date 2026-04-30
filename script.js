@@ -2549,7 +2549,7 @@ function renderUpcomingSessionCard(data){
     bodyId: "upcomingSessionBody"
   });
 
-  renderMatchMakerRotationStrip(globalMapMatchMaker);
+  renderMatchMakerRotationStrip(globalMapMatchMaker, "upcomingSessionMaker");
 
 }
 
@@ -2563,11 +2563,13 @@ function getShortMatchMakerName(name){
 
 }
 
-function renderMatchMakerRotationStrip(currentMaker){
+function renderMatchMakerRotationStrip(currentMaker, makerId = "upcomingSessionMaker"){
 
-  const makerEl = document.getElementById("upcomingSessionMaker");
+  const makerEl = document.getElementById(makerId);
 
   if(!makerEl) return;
+
+  makerEl.classList.add("matchMakerInlineRow");
 
   const players = Array.isArray(allPlayers)
     ? allPlayers
@@ -3236,7 +3238,7 @@ function buildCopySessionCard(data, matchMaker, options = {}){
 
   if(!makerEl || !bodyEl) return;
 
-  makerEl.textContent = "Match Maker: " + (matchMaker || "Not selected");
+  renderMatchMakerRotationStrip(matchMaker, makerId);
 
   const sections = [
     {
