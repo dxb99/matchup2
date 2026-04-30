@@ -1177,8 +1177,10 @@ transform:none;
   font-size:18px;
   margin-bottom:15px;
   position:relative;
+  padding-left:88px;
   padding-right:88px;
   min-height:24px;
+  text-align:center;
 }
 
 .midTag{
