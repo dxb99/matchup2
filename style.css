@@ -3134,7 +3134,8 @@ text-shadow:0 0 24px rgba(75,163,255,0.34), 0 1px 0 rgba(255,255,255,0.18);
 }
 
 .tabs{
-max-width:1180px;
+width:100%;
+max-width:none;
 padding:3px;
 box-sizing:border-box;
 border:1px solid rgba(255,255,255,0.08);
