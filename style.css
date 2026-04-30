@@ -2997,21 +2997,27 @@ body.admin-unlocked .mapDeleteMini {
   .matchMakerRotationStrip{
     gap:5px;
     margin-bottom:0;
+    width:100%;
   }
 
   .matchMakerRotationItem{
-    min-width:34px;
+    min-width:0;
+    max-width:72px;
     min-height:26px;
     padding:4px 6px;
     font-size:11px;
   }
 
   .rotationFullName{
-    display:none;
+    display:inline-block;
+    max-width:58px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
   }
 
   .rotationShortName{
-    display:inline;
+    display:none;
   }
 
   .upcomingSessionCard .copySessionBody{
@@ -3296,27 +3302,6 @@ background:
 background:transparent;
 }
 
-.eliminationHeader{
-  color:#ffffff;
-  background:linear-gradient(180deg, rgba(127,29,29,0.96) 0%, rgba(69,10,10,0.96) 100%);
-  border-color:rgba(255,255,255,0.16);
-  text-shadow:0 1px 2px rgba(0,0,0,0.45);
-}
-
-.blitzHeader{
-  color:#ffffff;
-  background:linear-gradient(180deg, rgba(113,63,18,0.96) 0%, rgba(66,32,6,0.96) 100%);
-  border-color:rgba(255,255,255,0.18);
-  text-shadow:0 1px 2px rgba(0,0,0,0.45);
-}
-
-.ctfHeader{
-  color:#ffffff;
-  background:linear-gradient(180deg, rgba(30,64,175,0.96) 0%, rgba(23,37,84,0.96) 100%);
-  border-color:rgba(255,255,255,0.16);
-  text-shadow:0 1px 2px rgba(0,0,0,0.45);
-}
-
 .tabContent{
 margin-top:180px;
 }
@@ -3446,6 +3431,20 @@ margin-top:180px;
     overflow:hidden;
     text-overflow:ellipsis;
     white-space:nowrap;
+  }
+
+}
+
+@media(max-width:380px){
+
+  .matchMakerRotationItem{
+    max-width:62px;
+    padding-left:5px;
+    padding-right:5px;
+  }
+
+  .rotationFullName{
+    max-width:50px;
   }
 
 }
