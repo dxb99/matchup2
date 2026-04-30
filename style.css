@@ -1176,6 +1176,19 @@ transform:none;
 .matchHeader{
   font-size:18px;
   margin-bottom:15px;
+  position:relative;
+  padding-right:88px;
+  min-height:24px;
+}
+
+.midTag{
+  position:absolute;
+  top:0;
+  right:0;
+  font-size:12px;
+  color:#aaa;
+  padding:3px 8px;
+  white-space:nowrap;
 }
 
 .teamsRow{
@@ -2846,6 +2859,7 @@ body.admin-unlocked .mapDeleteMini {
     text-align:center;
 
     display:block;
+    min-height:36px;
   }
 
   #matchupDashboardCard .midTag{
