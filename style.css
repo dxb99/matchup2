@@ -2492,6 +2492,33 @@ body.admin-unlocked .mapDeleteMini {
 
 }
 
+.historyDateCellContent{
+  display:inline-flex;
+  align-items:center;
+  justify-content:flex-start;
+  text-align:left;
+  min-width:190px;
+}
+
+#historyTable td:first-child{
+  text-align:center;
+}
+
+.historyDateText{
+  display:inline-block;
+  text-align:left;
+}
+
+.expandIcon{
+  display:inline-block;
+  width:14px;
+  margin-right:8px;
+  color:#888;
+  font-size:12px;
+  text-align:center;
+  flex:0 0 14px;
+}
+
 @media(max-width:700px){
 
 #adminBar{
