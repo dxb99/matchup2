@@ -2406,6 +2406,37 @@ body.admin-unlocked .mapDeleteMini {
   font-weight:700;
 }
 
+.copySessionCard .copySessionMaker{
+  gap:12px;
+  margin-bottom:22px;
+}
+
+.copySessionCard .matchMakerInlineLabel{
+  font-size:20px;
+  font-weight:700;
+  color:#ffffff;
+}
+
+.copySessionCard .matchMakerRotationStrip{
+  gap:8px;
+  max-width:100%;
+}
+
+.copySessionCard .matchMakerRotationItem{
+  min-height:34px;
+  padding:6px 12px;
+  font-size:18px;
+  border-radius:999px;
+}
+
+.copySessionCard .rotationFullName{
+  display:inline-block;
+  max-width:none;
+  overflow:visible;
+  text-overflow:clip;
+  white-space:nowrap;
+}
+
 .rotationShortName{
   display:none;
 }
