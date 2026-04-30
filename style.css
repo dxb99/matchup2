@@ -3081,8 +3081,8 @@ body.admin-unlocked .mapDeleteMini {
 /* GLASS POLISH OVERRIDES */
 
 :root{
---glass-panel:rgba(12,18,32,0.64);
---glass-panel-strong:rgba(13,22,39,0.82);
+--glass-panel:rgba(17,17,17,0.82);
+--glass-panel-strong:rgba(8,8,8,0.90);
 --glass-panel-soft:rgba(255,255,255,0.055);
 --glass-border:rgba(255,255,255,0.16);
 --glass-border-soft:rgba(255,255,255,0.09);
@@ -3173,9 +3173,7 @@ box-shadow:0 0 20px rgba(59,130,246,0.36), inset 0 1px 0 rgba(255,255,255,0.18);
 #playersCheckboxes label,
 table,
 .historyDetailRow .matchCard{
-background:
-linear-gradient(180deg, rgba(255,255,255,0.095), rgba(255,255,255,0.035)),
-var(--glass-panel);
+background:var(--glass-panel);
 border:1px solid var(--glass-border);
 box-shadow:var(--glass-shadow), var(--glass-inset);
 backdrop-filter:blur(18px) saturate(135%);
@@ -3257,6 +3255,29 @@ backdrop-filter:blur(8px);
 background:
 linear-gradient(180deg, rgba(59,130,246,0.16), rgba(255,255,255,0.04)),
 rgba(8,13,22,0.88);
+}
+
+.matchCard{
+background:
+  linear-gradient(90deg,
+    rgba(255,75,75,0.30) 0%,
+    rgba(255,75,75,0.18) 28%,
+    rgba(17,17,17,1) 50%,
+    rgba(75,163,255,0.18) 72%,
+    rgba(75,163,255,0.30) 100%
+  ),
+  radial-gradient(circle at 10% 50%, rgba(255,75,75,0.25), transparent 40%),
+  radial-gradient(circle at 90% 50%, rgba(75,163,255,0.25), transparent 40%);
+}
+
+#matchupDashboardCard{
+background:
+  linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015)),
+  linear-gradient(135deg, #080808 0%, #111111 55%, #090909 100%);
+}
+
+#matchupDashboardCard .upcomingSessionCard{
+background:transparent;
 }
 
 .tabContent{
