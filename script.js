@@ -37,9 +37,26 @@ let currentSessionMaps = {
   blitz: [],
   ctf: []
 };
-const APP_TIME_ZONE = "Asia/Dubai";
-const APP_TIME_ZONE_LABEL = "GST";
 const API_TIMEOUT_MS = 30000;
+
+function normalizeSkillValue(value){
+  const numeric = Number(value);
+  if(Number.isNaN(numeric)) return 0;
+  return Math.round(numeric * 10) / 10;
+}
+
+function formatSkillValue(value){
+  return normalizeSkillValue(value).toFixed(1);
+}
+
+function getGapBucket(value){
+  const numeric = normalizeSkillValue(value);
+  return Math.max(0, Math.min(4, Math.floor(numeric)));
+}
+
+function formatGapValue(value){
+  return formatSkillValue(value);
+}
 let armedMatchKey = null; // 🔥 tracks first click before confirm
 
 /* 🔥 GLOBAL MODAL SYSTEM */
@@ -640,7 +657,7 @@ el.innerHTML=`
 
     <div class="team red">
   <div class="teamTitle">
-    RED TEAM <span class="teamBadge">${match.redSkill}</span>
+    RED TEAM <span class="teamBadge">${formatSkillValue(match.redSkill)}</span>
   </div>
       <div class="teamPlayers">
         ${match.redTeam.map(name => {
@@ -650,7 +667,7 @@ el.innerHTML=`
   return `
     <div class="playerRow">
       ${name}
-      <span class="skillMedal">${player ? player.skill : ""}</span>
+      <span class="skillMedal">${player ? formatSkillValue(player.skill) : ""}</span>
     </div>
   `;
 
@@ -662,7 +679,7 @@ el.innerHTML=`
 
     <div class="team blue">
   <div class="teamTitle">
-    BLUE TEAM <span class="teamBadge">${match.blueSkill}</span>
+    BLUE TEAM <span class="teamBadge">${formatSkillValue(match.blueSkill)}</span>
   </div>
       <div class="teamPlayers">
         ${match.blueTeam.map(name => {
@@ -672,7 +689,7 @@ el.innerHTML=`
   return `
     <div class="playerRow">
       ${name}
-      <span class="skillMedal">${player ? player.skill : ""}</span>
+      <span class="skillMedal">${player ? formatSkillValue(player.skill) : ""}</span>
     </div>
   `;
 
@@ -683,8 +700,8 @@ el.innerHTML=`
   </div>
 
   <div class="matchFooter">
-    <span class="diff diff-${match.skillGap}">
-  Difference: ${match.skillGap}
+    <span class="diff diff-${getGapBucket(match.skillGap)}">
+  Difference: ${formatGapValue(match.skillGap)}
 </span>
   </div>
 
@@ -858,7 +875,7 @@ div.innerHTML=`
 
 <div class="teamLine">
 
-<span class="redTeam"><strong><span class="skillMedal">${m.redSkill}</span> RED TEAM :</strong></span>
+<span class="redTeam"><strong><span class="skillMedal">${formatSkillValue(m.redSkill)}</span> RED TEAM :</strong></span>
 
 <span class="teamPlayers">
 ${m.redTeam.map(p=>p.name).join(", ")}
@@ -868,7 +885,7 @@ ${m.redTeam.map(p=>p.name).join(", ")}
 
 <div class="teamLine">
 
-<span class="blueTeam"><strong><span class="skillMedal">${m.blueSkill}</span> BLUE TEAM :</strong></span>
+<span class="blueTeam"><strong><span class="skillMedal">${formatSkillValue(m.blueSkill)}</span> BLUE TEAM :</strong></span>
 
 <span class="teamPlayers">
 ${m.blueTeam.map(p=>p.name).join(", ")}
@@ -878,8 +895,8 @@ ${m.blueTeam.map(p=>p.name).join(", ")}
 
 <div class="badges">
 
-<span class="badge gap-${m.skillGap}">
-Difference ${m.skillGap}
+<span class="badge gap-${getGapBucket(m.skillGap)}">
+Difference ${formatGapValue(m.skillGap)}
 </span>
 
 <span class="badge picks">
@@ -1133,7 +1150,7 @@ div.innerHTML=`
   <label>
   <input type="checkbox" ${isChecked ? "checked" : ""} value="${p.name}">
   ${p.name}
-  <span class="skillMedal">${p.skill}</span>
+  <span class="skillMedal">${formatSkillValue(p.skill)}</span>
   </label>
   `;
 
@@ -1291,7 +1308,7 @@ function createSkillAdjuster(value){
   const cell = document.createElement("div");
   cell.className = "skillValueCell";
   cell.contentEditable = "true";
-  cell.textContent = value;
+  cell.textContent = formatSkillValue(value);
 
   const upBtn = document.createElement("button");
   upBtn.className = "skillAdjustBtn";
@@ -1299,20 +1316,20 @@ function createSkillAdjuster(value){
   upBtn.textContent = "▲";
 
   const clampAndSet = (nextValue) => {
-    const numeric = parseInt(nextValue, 10);
-    cell.textContent = Number.isNaN(numeric) ? "0" : String(numeric);
+    const numeric = normalizeSkillValue(nextValue);
+    cell.textContent = formatSkillValue(numeric);
     markAdminDirty(true);
   };
 
   downBtn.onclick = () => {
-    const current = parseInt(cell.textContent.trim(), 10) || 0;
-    cell.textContent = String(current - 1);
+    const current = normalizeSkillValue(cell.textContent.trim());
+    cell.textContent = formatSkillValue(current - 0.1);
     markAdminDirty(true);
   };
 
   upBtn.onclick = () => {
-    const current = parseInt(cell.textContent.trim(), 10) || 0;
-    cell.textContent = String(current + 1);
+    const current = normalizeSkillValue(cell.textContent.trim());
+    cell.textContent = formatSkillValue(current + 0.1);
     markAdminDirty(true);
   };
 
@@ -1429,8 +1446,8 @@ function sortAdminTableRows(){
     }
 
     if(currentAdminSort.key === "skill"){
-      valA = parseInt(a.querySelector(".skillValueCell")?.innerText.trim() || "0", 10);
-      valB = parseInt(b.querySelector(".skillValueCell")?.innerText.trim() || "0", 10);
+      valA = normalizeSkillValue(a.querySelector(".skillValueCell")?.innerText.trim() || "0");
+      valB = normalizeSkillValue(b.querySelector(".skillValueCell")?.innerText.trim() || "0");
     }
 
     if(valA < valB) return currentAdminSort.direction === "asc" ? -1 : 1;
@@ -1545,14 +1562,14 @@ if(!pass) return;
 
     const name = row.cells[0].innerText.trim();
     const skillCell = row.querySelector(".skillValueCell");
-    const skill = parseInt(skillCell ? skillCell.innerText.trim() : "0", 10);
+    const skill = normalizeSkillValue(skillCell ? skillCell.innerText.trim() : "0");
     const matchMakerEligible = row.querySelector(".matchMakerEligible");
 
     if(!name) return;
 
     players.push({
       name:name,
-      skill:Number.isNaN(skill) ? 0 : skill,
+      skill:skill,
       matchMaker: matchMakerEligible ? matchMakerEligible.checked : true
     });
 
@@ -1714,13 +1731,13 @@ row.innerHTML = `
   <td>
     <span class="historyDateCellContent">
       <span class="expandIcon">▶</span>
-      <span class="historyDateText">${match.selectedAtDisplay || formatDate(match.selectedAt)}</span>
+      <span class="historyDateText">${formatDate(match.selectedAt)}</span>
     </span>
   </td>
   <td>${match.MID ? "MID_" + String(match.MID).replace("MID_","").padStart(4,"0") : "----"}</td>
   <td>${match.matchMaker}</td>
   <td>${count}</td>
-  <td>${match.skillGap}</td>
+  <td>${formatGapValue(match.skillGap)}</td>
 `;
 
   /* 🔥 DETAIL ROW */
@@ -1739,7 +1756,7 @@ detailRow.innerHTML = `
 
         <div class="team red">
           <div class="teamTitle">
-            RED TEAM <span class="teamBadge">${match.redSkill}</span>
+            RED TEAM <span class="teamBadge">${formatSkillValue(match.redSkill)}</span>
           </div>
 
           <div class="teamPlayers">
@@ -1753,7 +1770,7 @@ ${match.redTeam
   return `
     <div class="playerRow">
       ${name}
-      <span class="skillMedal">${player ? player.skill : ""}</span>
+      <span class="skillMedal">${player ? formatSkillValue(player.skill) : ""}</span>
     </div>
   `;
 
@@ -1765,7 +1782,7 @@ ${match.redTeam
 
         <div class="team blue">
           <div class="teamTitle">
-            BLUE TEAM <span class="teamBadge">${match.blueSkill}</span>
+            BLUE TEAM <span class="teamBadge">${formatSkillValue(match.blueSkill)}</span>
           </div>
 
           <div class="teamPlayers">
@@ -1779,7 +1796,7 @@ ${match.blueTeam
   return `
     <div class="playerRow">
       ${name}
-      <span class="skillMedal">${player ? player.skill : ""}</span>
+      <span class="skillMedal">${player ? formatSkillValue(player.skill) : ""}</span>
     </div>
   `;
 
@@ -1790,8 +1807,8 @@ ${match.blueTeam
       </div>
 
       <div class="matchFooter">
-        <span class="diff diff-${match.skillGap}">
-          Difference: ${match.skillGap}
+        <span class="diff diff-${getGapBucket(match.skillGap)}">
+          Difference: ${formatGapValue(match.skillGap)}
         </span>
       </div>
 
@@ -1894,8 +1911,7 @@ function formatDate(date){
 
   if(Number.isNaN(d.getTime())) return "";
 
-  const dateText = new Intl.DateTimeFormat("en-US", {
-    timeZone: APP_TIME_ZONE,
+  return new Intl.DateTimeFormat("en-US", {
     month: "numeric",
     day: "numeric",
     year: "numeric",
@@ -1904,8 +1920,6 @@ function formatDate(date){
     second: "2-digit",
     hour12: true
   }).format(d);
-
-  return `${dateText} ${APP_TIME_ZONE_LABEL}`;
 
 }
 
@@ -2026,14 +2040,14 @@ combos.forEach(red => {
 
 const blue = players.filter(p => !red.includes(p));
 
-const redSkill = red.reduce((s,p)=>s+p.skill,0);
-const blueSkill = blue.reduce((s,p)=>s+p.skill,0);
+const redSkill = normalizeSkillValue(red.reduce((s,p)=>s+normalizeSkillValue(p.skill),0));
+const blueSkill = normalizeSkillValue(blue.reduce((s,p)=>s+normalizeSkillValue(p.skill),0));
 
-const gap = Math.abs(redSkill - blueSkill);
+const gap = normalizeSkillValue(Math.abs(redSkill - blueSkill));
 
 /* Hide matchups with skill gap greater than 4 */
 
-if(gap > 4) return;
+if(gap >= 5) return;
 
 /* Prevent mirrored duplicates */
 
@@ -2122,7 +2136,7 @@ function applyGapFilter(){
 
     const gapValue = Number(filter);
 
-    filtered = lastGeneratedMatchups.filter(m => m.skillGap === gapValue);
+    filtered = lastGeneratedMatchups.filter(m => getGapBucket(m.skillGap) === gapValue);
 
   }
 
@@ -2141,8 +2155,8 @@ if(blitzEnabled){
     /* if equal teams, ignore */
     if(m.redTeam.length === m.blueTeam.length) return false;
 
-    const smallSkill = small.reduce((s,p)=>s+p.skill,0);
-    const largeSkill = large.reduce((s,p)=>s+p.skill,0);
+    const smallSkill = normalizeSkillValue(small.reduce((s,p)=>s+normalizeSkillValue(p.skill),0));
+    const largeSkill = normalizeSkillValue(large.reduce((s,p)=>s+normalizeSkillValue(p.skill),0));
 
     return smallSkill > largeSkill;
 
@@ -2189,8 +2203,8 @@ if(blitzEnabled){
 
     if(m.redTeam.length === m.blueTeam.length) return false;
 
-    const smallSkill = small.reduce((s,p)=>s+p.skill,0);
-    const largeSkill = large.reduce((s,p)=>s+p.skill,0);
+    const smallSkill = normalizeSkillValue(small.reduce((s,p)=>s+normalizeSkillValue(p.skill),0));
+    const largeSkill = normalizeSkillValue(large.reduce((s,p)=>s+normalizeSkillValue(p.skill),0));
 
     return smallSkill > largeSkill;
 
@@ -2208,8 +2222,10 @@ const counts = {
 };
 
 source.forEach(m=>{
-  if(counts.hasOwnProperty(m.skillGap)){
-    counts[m.skillGap]++;
+  const bucket = getGapBucket(m.skillGap);
+
+  if(counts.hasOwnProperty(bucket)){
+    counts[bucket]++;
   }
 });
 
