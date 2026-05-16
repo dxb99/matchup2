@@ -65,7 +65,7 @@ let currentSessionLastPlayed = {
   bonus: ""
 };
 const API_TIMEOUT_MS = 30000;
-const APP_VERSION = "2026.05.16.2";
+const APP_VERSION = "2026.05.16.3";
 
 async function ensureLatestAppVersion(){
   try{
@@ -97,6 +97,13 @@ async function ensureLatestAppVersion(){
   }
 
   return true;
+}
+
+function renderAppVersion(){
+  const badge = document.getElementById("appVersionBadge");
+  if(!badge) return;
+
+  badge.textContent = "v" + APP_VERSION;
 }
 
 function normalizeSkillValue(value){
@@ -504,6 +511,7 @@ window.addEventListener("load", async () => {
 
 const isLatestAppVersion = await ensureLatestAppVersion();
 if(!isLatestAppVersion) return;
+renderAppVersion();
 
 sessionStorage.removeItem("selectedGeneratorMatchMaker");
 sessionStorage.removeItem("selectedPlayers");
